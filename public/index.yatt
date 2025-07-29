@@ -1,6 +1,13 @@
+<yatt:my backend:value="&yatt:cc_sessions();"/>
+
 <ul>
-<yatt:foreach my=row list="&yatt:cc_sessions():projects();">
-  <li>&yatt:row;</li>
+<yatt:foreach my=project list="&yatt:backend:projects();">
+  <h2>&yatt:project;</h2>
+  <ul>
+    <yatt:foreach my=session list="&yatt:backend:sessions(:project);">
+      <li>&yatt:session;</li>
+    </yatt:foreach>
+  </ul>
 </yatt:foreach>
 </ul>
 

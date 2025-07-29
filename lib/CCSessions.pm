@@ -11,6 +11,19 @@ use MOP4Import::Base::CLI_JSON -as_base
      )
    ];
 
+use File::stat;
+
+sub sessions {
+  (my MY $self, my $project) = @_;
+  map {
+    +{
+      dir => $project, fn => File::Basename::basename($_),
+      stat => stat($_),
+    }
+  }
+  glob "$self->{claude_projects}/$project/*.jsonl";
+}
+
 sub projects {
   (my MY $self) = @_;
   map {

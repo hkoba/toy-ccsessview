@@ -1,0 +1,4 @@
+[submodule "lib/YATT"]
+	path = lib/YATT
+	url = ../yatt_lite.git
+	branch = gh239-lsp-completion

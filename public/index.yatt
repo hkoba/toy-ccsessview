@@ -1,15 +1,24 @@
 <yatt:my backend:value="&yatt:cc_sessions();"/>
 
 <ul>
-<yatt:foreach my=project list="&yatt:backend:projects();">
+<yatt:foreach my=project list="&yatt:backend:project_list();">
   <h2>&yatt:project;</h2>
   <ul>
-    <yatt:foreach my=session list="&yatt:backend:sessions(:project);">
-      <li>&yatt:session;</li>
+    <yatt:foreach my=session list="&yatt:backend:session_list(:project);">
+      <li><a href="?~~=session;id=&yatt:session{id};">&yatt:session{id};</a></li>
     </yatt:foreach>
   </ul>
 </yatt:foreach>
+
+&yatt:backend{_id_cache};
+
 </ul>
+
+<!yatt:page session id>
+
+<yatt:my backend:value="&yatt:cc_sessions();"/>
+
+&yatt:backend:scan_session(:id);
 
 <!yatt:entity json_decode json>
 use JSON;

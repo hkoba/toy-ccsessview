@@ -40,10 +40,23 @@
 <a href="?~~=session;id=&yatt:id;">↑</a>
 <a href="./?~~=show;id=&yatt:id;;ix=&yatt:next_ix;">→</a><br>
 
+<h3>&yatt:rec{type};</h3>
+
+<yatt:if "ref &yatt:rec{message}{content}; eq 'ARRAY'">
+  <yatt:foreach my:value=item list="&yatt:lexpand(:rec{message}{content});" >
+    <h3>&yatt:item{type};</h3>
+    <yatt:if "&yatt:can_render([content_type_,:item{type}]);">
+      &yatt:render([content_type_,:item{type}],:item);
+      <:yatt:else/>
+      <pre style="white-space: pre-wrap;">&yatt:item;</pre>
+    </yatt:if>
+  </yatt:foreach>
+<:yatt:else/>
 <pre style="white-space: pre-wrap;">
 &yatt:rec{message}{content};
 </pre>
-
+</yatt:if>
+<hr>
 <pre style="white-space: pre-wrap;">
 &yatt:decode_utf8(:json);
 </pre>
@@ -55,3 +68,17 @@ decode_json($json);
 <!yatt:entity decode_utf8 str>
 use Encode;
 decode_utf8($str);
+
+<!yatt:widget content_type__text item="value!">
+
+<pre style="white-space: pre-wrap;">
+&yatt:item{text};
+</pre>
+
+
+<!yatt:widget content_type__tool_result item="value!">
+
+<pre style="white-space: pre-wrap;">
+&yatt:item{content};
+</pre>
+

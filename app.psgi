@@ -31,11 +31,11 @@ use YATT::Lite qw/Entity *CON/;
     $site->mount_static("/static" => $staticDir);
   }
 
+  require CCSessions;
+  my $cc_sessions = CCSessions->new;
+
   Entity cc_sessions => sub {
-    $CON->stash->{cc_sessions} //= do {
-      require CCSessions;
-      CCSessions->new;
-    }
+    $cc_sessions;
   };
 
   return $site->wrapped_by(builder {

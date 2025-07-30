@@ -18,7 +18,24 @@
 
 <yatt:my backend:value="&yatt:cc_sessions();"/>
 
-&yatt:backend:scan_session(:id);
+<ul>
+  <yatt:foreach my=ix list="&yatt:backend:scan_session(:id);">
+    <li><a href="./?~~=show;id=&yatt:id;;ix=&yatt:ix;">&yatt:ix;</li>
+  </yatt:foreach>
+</ul>
+
+
+<!yatt:page show id ix>
+
+<yatt:my backend:value="&yatt:cc_sessions();"
+         rec:value="&yatt:backend:read_session_item(:id,:ix);"/>
+
+&yatt:rec;
+
+<pre>
+&yatt:rec{message}{content};
+</pre>
+
 
 <!yatt:entity json_decode json>
 use JSON;

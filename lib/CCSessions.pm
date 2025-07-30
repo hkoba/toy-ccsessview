@@ -21,14 +21,20 @@ use MOP4Import::Types
 
 sub read_session_item {
   (my MY $self, my ($id, $ix)) = @_;
-  
+  my $fn = $self->session_filepath($id);
+  my $list = $self->scan_session($id);
+  my $pos = $list->[$ix];
+
+  open my $fh , '<', $fn or Carp::croak "no such file: $fn";
+  my $json = <$fh>;
+  $self->cli_decode_json($json);
 }
 
 sub scan_session {
   (my MY $self, my ($id)) = @_;
   my $fn = $self->session_filepath($id);
 
-  $self->{_session_cache}{$id} //= do {
+  my $list = $self->{_session_cache}{$id} //= do {
     open my $fh, '<', $fn or Carp::croak "no such file: $fn";
     my @result;
     my $fpos = 0;
@@ -38,6 +44,8 @@ sub scan_session {
     }
     \@result;
   };
+
+  wantarray ? @$list : $list;
 }
 
 sub session_filepath {

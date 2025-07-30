@@ -40,13 +40,18 @@
 <a href="?~~=session;id=&yatt:id;">↑</a>
 <a href="./?~~=show;id=&yatt:id;;ix=&yatt:next_ix;">→</a><br>
 
-<pre>
+<pre style="white-space: pre-wrap;">
 &yatt:rec{message}{content};
 </pre>
 
-&yatt:json;
-
+<pre style="white-space: pre-wrap;">
+&yatt:decode_utf8(:json);
+</pre>
 
 <!yatt:entity decode_json json>
 use JSON;
 decode_json($json);
+
+<!yatt:entity decode_utf8 str>
+use Encode;
+decode_utf8($str);

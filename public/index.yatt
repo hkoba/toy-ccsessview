@@ -18,6 +18,8 @@
 
 <yatt:my backend:value="&yatt:cc_sessions();"/>
 
+<a href="./">Top</a>
+
 <ul>
   <yatt:foreach my=ix list="&yatt:backend:scan_session(:id);">
     <li><a href="./?~~=show;id=&yatt:id;;ix=&yatt:ix;">&yatt:ix;</li>
@@ -28,15 +30,23 @@
 <!yatt:page show id ix>
 
 <yatt:my backend:value="&yatt:cc_sessions();"
-         rec:value="&yatt:backend:read_session_item(:id,:ix);"/>
+         json="&yatt:backend:read_session_item(:id,:ix);"
+         rec:value="&yatt:decode_json(:json);"
+         prev_ix:value="&yatt:ix; - 1"
+         next_ix:value="&yatt:ix; + 1"
+         />
 
-&yatt:rec;
+<a href="./?~~=show;id=&yatt:id;;ix=&yatt:prev_ix;">←</a>
+<a href="?~~=session;id=&yatt:id;">↑</a>
+<a href="./?~~=show;id=&yatt:id;;ix=&yatt:next_ix;">→</a><br>
 
 <pre>
 &yatt:rec{message}{content};
 </pre>
 
+&yatt:json;
 
-<!yatt:entity json_decode json>
+
+<!yatt:entity decode_json json>
 use JSON;
 decode_json($json);

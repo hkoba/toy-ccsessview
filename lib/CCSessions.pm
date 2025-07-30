@@ -20,19 +20,19 @@ use MOP4Import::Types
   );
 
 sub read_session_item {
-  (my MY $self, my ($id, $ix)) = @_;
-  my $fn = $self->session_filepath($id);
-  my $list = $self->scan_session($id);
+  (my MY $self, my ($id, $ix, $project)) = @_;
+  my $fn = $self->session_filepath($id, $project);
+  my $list = $self->scan_session($id, $project);
   my $pos = $list->[$ix];
 
   open my $fh , '<', $fn or Carp::croak "no such file: $fn";
-  my $json = <$fh>;
-  $self->cli_decode_json($json);
+  seek $fh, $pos, 0;
+  scalar <$fh>;
 }
 
 sub scan_session {
-  (my MY $self, my ($id)) = @_;
-  my $fn = $self->session_filepath($id);
+  (my MY $self, my ($id, $project)) = @_;
+  my $fn = $self->session_filepath($id, $project);
 
   my $list = $self->{_session_cache}{$id} //= do {
     open my $fh, '<', $fn or Carp::croak "no such file: $fn";
@@ -45,19 +45,28 @@ sub scan_session {
     \@result;
   };
 
-  wantarray ? @$list : $list;
+  wantarray ? (0 .. $#$list) : $list;
 }
 
 sub session_filepath {
-  (my MY $self, my ($id)) = @_;
-  my FileInfo $rec = $self->session_fileinfo($id);
+  (my MY $self, my ($id, $project)) = @_;
+  my FileInfo $rec = $self->session_fileinfo($id, $project);
   "$self->{claude_projects}/$rec->{dir}/$id.jsonl";
 }
 
 sub session_fileinfo {
-  (my MY $self, my ($id)) = @_;
-  my FileInfo $rec = $self->{_id_cache}{$id}
-    or Carp::croak "No such session: $id";
+  (my MY $self, my ($id, $project)) = @_;
+  my FileInfo $rec = $self->{_id_cache}{$id} //= do {
+    if ($project) {
+      my FileInfo $rec = $self->make_session_record($project, $id);
+      unless ($self->check_session_exists($rec)) {
+        Carp::croak "No such session: $id, $project";
+      }
+      $rec;
+    } else {
+      Carp::croak "No such session: $id";
+    }
+  }
 }
 
 sub session_list {
@@ -65,14 +74,26 @@ sub session_list {
   map {
     my $id = File::Basename::basename($_);
     $id =~ s/\.jsonl\z//;
-    my FileInfo $rec = +{};
-    $rec->{dir} = $project;
-    $rec->{id} = $id;
+    my FileInfo $rec = $self->make_session_record($project, $id);
     $rec->{stat} = stat($_);
-    $self->{_id_cache}{$id} = $rec;
     $rec;
   }
   glob "$self->{claude_projects}/$project/*.jsonl";
+}
+
+sub make_session_record {
+  (my MY $self, my ($project, $id)) = @_;
+  my FileInfo $rec = +{};
+  $rec->{dir} = $project;
+  $rec->{id} = $id;
+  $self->{_id_cache}{$id} = $rec;
+  $rec;
+}
+
+sub check_session_exists {
+  (my MY $self, my FileInfo $rec) = @_;
+  my $fn = "$self->{claude_projects}/$rec->{dir}/$rec->{id}.jsonl";
+  -e $fn;
 }
 
 sub project_list {

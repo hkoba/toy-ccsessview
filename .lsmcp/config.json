@@ -41,12 +41,12 @@
   ],
   "adapter": {
     "id": "custom",
-    "name": "Custom Language Server",
-    "bin": "your-language-server",
+    "name": "YATT Language Server",
+    "bin": "yatt",
     "args": [
-      "--stdio"
+      "langserver"
     ],
     "baseLanguage": "unknown",
-    "description": "Configure your language server here"
+    "description": "YATT Language server"
   }
 }

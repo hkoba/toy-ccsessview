@@ -31,8 +31,8 @@
 </style>
 
 <ul>
-  <yatt:foreach my=ix list="&yatt:lexpand(:items);">
-    <yatt:my item:value="&yatt:items[:ix];"/>
+  <yatt:foreach my=item list=items nth=i>
+    <yatt:my ix:value="&yatt:i; - 1"/>
     <li class="session-item session-&yatt:item{type};">
       <a href="./?~~=show;id=&yatt:id;;ix=&yatt:ix;">
         <strong>&yatt:ix;:</strong> 

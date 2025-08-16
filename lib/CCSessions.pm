@@ -88,7 +88,7 @@ sub scan_session {
     \@result;
   };
 
-  wantarray ? (0 .. $#$list) : $list;
+  wantarray ? @$list : $list;
 }
 
 sub session_filepath {

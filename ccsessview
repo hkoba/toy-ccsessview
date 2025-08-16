@@ -12,13 +12,11 @@ use File::Spec;
 use Cwd;
 
 {
-
-
   my $runner = Plack::Runner->new;
   $runner->parse_options(@ARGV);
-  local $ENV{CLAUDE_PROJECTS_DIR} = shift(@{$runner->{argv}}) || getcwd;
+  local $ENV{CLAUDE_PROJECTS_DIR} = shift(@{$runner->{argv}});
 
-  $runner->run;
+  $runner->run("$FindBin::RealBin/app.psgi");
 }
 
 sub usage {

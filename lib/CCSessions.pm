@@ -16,6 +16,7 @@ use File::stat;
 
 use MOP4Import::Types
   (FileInfo => [[fields => qw(id dir stat)]],
+   SessionItemInfo => [[fields => qw(pos type role tool summary)]],
    # FileCache => [[fields => qw(mtime lines)]],
   );
 
@@ -23,7 +24,8 @@ sub read_session_item {
   (my MY $self, my ($id, $ix, $project)) = @_;
   my $fn = $self->session_filepath($id, $project);
   my $list = $self->scan_session($id, $project);
-  my $pos = $list->[$ix];
+  my SessionItemInfo $item = $list->[$ix];
+  my $pos = $item->{pos};
 
   open my $fh , '<', $fn or Carp::croak "no such file: $fn";
   seek $fh, $pos, 0;
@@ -38,8 +40,49 @@ sub scan_session {
     open my $fh, '<', $fn or Carp::croak "no such file: $fn";
     my @result;
     my $fpos = 0;
-    while (my $json = <$fh>) {
-      push @result, $fpos;
+    while (my $json_line = <$fh>) {
+      my SessionItemInfo $item = {};
+      $item->{pos} = $fpos;
+      
+      # JSONをデコードして概要情報を抽出
+      eval {
+        require JSON;
+        my $data = JSON::decode_json($json_line);
+        $item->{type} = $data->{type} // 'unknown';
+        
+        # typeに応じて概要を生成
+        if ($item->{type} eq 'user') {
+          $item->{role} = 'user';
+          my $content = ref($data->{message}{content}) eq 'ARRAY' 
+            ? $data->{message}{content}[0]{text} // ''
+            : $data->{message}{content} // '';
+          $item->{summary} = substr($content, 0, 50);
+        }
+        elsif ($item->{type} eq 'assistant') {
+          $item->{role} = 'assistant';
+          my $content = ref($data->{message}{content}) eq 'ARRAY'
+            ? $data->{message}{content}[0]{text} // ''
+            : $data->{message}{content} // '';
+          $item->{summary} = substr($content, 0, 50);
+        }
+        elsif ($item->{type} eq 'tool_use') {
+          $item->{tool} = $data->{toolName} // 'unknown';
+          $item->{summary} = "Tool: $item->{tool}";
+        }
+        elsif ($item->{type} eq 'tool_result') {
+          $item->{summary} = $data->{isError} ? "Error" : "Success";
+        }
+        else {
+          $item->{summary} = $item->{type};
+        }
+      };
+      if ($@) {
+        # JSONパースエラーの場合
+        $item->{type} = 'error';
+        $item->{summary} = 'Parse error';
+      }
+      
+      push @result, $item;
       $fpos = tell $fh;
     }
     \@result;

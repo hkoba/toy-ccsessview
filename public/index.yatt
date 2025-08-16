@@ -16,13 +16,35 @@
 
 <!yatt:page session id>
 
-<yatt:my backend:value="&yatt:cc_sessions();"/>
+<yatt:my backend:value="&yatt:cc_sessions();"
+         items:list="&yatt:backend:scan_session(:id);"/>
 
 <a href="./">Top</a>
 
+<style>
+  .session-item { margin: 5px 0; padding: 5px; border-left: 3px solid #ccc; }
+  .session-user { border-left-color: #4CAF50; }
+  .session-assistant { border-left-color: #2196F3; }
+  .session-tool_use { border-left-color: #FF9800; }
+  .session-tool_result { border-left-color: #9C27B0; }
+  .session-summary { color: #666; font-size: 0.9em; margin-left: 20px; }
+</style>
+
 <ul>
-  <yatt:foreach my=ix list="&yatt:backend:scan_session(:id);">
-    <li><a href="./?~~=show;id=&yatt:id;;ix=&yatt:ix;">&yatt:ix;</li>
+  <yatt:foreach my=ix list="&yatt:lexpand(:items);">
+    <yatt:my item:value="&yatt:items[:ix];"/>
+    <li class="session-item session-&yatt:item{type};">
+      <a href="./?~~=show;id=&yatt:id;;ix=&yatt:ix;">
+        <strong>&yatt:ix;:</strong> 
+        <yatt:if "&yatt:item{type}; eq 'user'">👤 User
+        <:yatt:else if="&yatt:item{type}; eq 'assistant'"/>🤖 Claude
+        <:yatt:else if="&yatt:item{type}; eq 'tool_use'"/>🔧 &yatt:item{tool};
+        <:yatt:else if="&yatt:item{type}; eq 'tool_result'"/>📊 Result
+        <:yatt:else/>&yatt:item{type};
+        </yatt:if>
+      </a>
+      <div class="session-summary">&yatt:item{summary};</div>
+    </li>
   </yatt:foreach>
 </ul>
 

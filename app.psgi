@@ -32,7 +32,9 @@ use YATT::Lite qw/Entity *CON/;
   }
 
   require CCSessions;
-  my $cc_sessions = CCSessions->new;
+  my $cc_sessions = CCSessions->new(
+    claude_projects => $ENV{CLAUDE_PROJECTS_DIR},
+  );
 
   Entity cc_sessions => sub {
     $cc_sessions;

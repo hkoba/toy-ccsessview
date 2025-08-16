@@ -1,0 +1,52 @@
+{
+  "version": "1.0",
+  "indexFiles": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx"
+  ],
+  "settings": {
+    "autoIndex": false,
+    "indexConcurrency": 5,
+    "autoIndexDelay": 500,
+    "enableWatchers": true,
+    "memoryLimit": 1024
+  },
+  "symbolFilter": {
+    "excludeKinds": [
+      "Variable",
+      "Constant",
+      "String",
+      "Number",
+      "Boolean",
+      "Array",
+      "Object",
+      "Key",
+      "Null"
+    ],
+    "excludePatterns": [
+      "callback",
+      "temp",
+      "tmp",
+      "_",
+      "^[a-z]$"
+    ],
+    "includeOnlyTopLevel": false
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**"
+  ],
+  "adapter": {
+    "id": "custom",
+    "name": "Custom Language Server",
+    "bin": "your-language-server",
+    "args": [
+      "--stdio"
+    ],
+    "baseLanguage": "unknown",
+    "description": "Configure your language server here"
+  }
+}

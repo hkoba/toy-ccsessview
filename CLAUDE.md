@@ -89,6 +89,30 @@ This project uses YATT::Lite templating framework. Key concepts:
 - Widget declarations like `<!yatt:page>` define page components
 - Built-in entities: `decode_json`, `decode_utf8` for data processing
 
+##### Variable Types and Assignment
+- **scalar (value)**: `<yatt:my var:value="..."/>`
+- **list**: `<yatt:my var:list="..."/>`
+  - List assignment allows direct foreach iteration without lexpand
+  - Works when backend method uses `wantarray` to return list/array
+
+##### Array and Hash Access
+- **Array element access**: `&yatt:ARRAY[:INDEX];`
+  - Example: `&yatt:items[:ix];` accesses element at index `ix`
+- **Hash element access**: `&yatt:HASH{KEY};`
+- **Nested expressions**: Use `:` prefix for variables inside expressions
+  - Example: `&yatt:lexpand(:items);` expands the `items` variable
+
+##### Entity Macros
+- `&yatt:lexpand(:ARRAY_EXPR);` - Expands array expression (applies `@{ARRAY}` in Perl)
+  - Use with scalar variables containing array refs
+  - Not needed when using list-type variables
+
+##### Conditional Statements
+- `<yatt:if "condition">...action...</yatt:if>`
+- `<:yatt:else/>...alternative action...`
+- `<:yatt:else if="condition"/>...conditional action...`
+- Note: else if uses `<:yatt:else if="..."/>` not `<:yatt:elif/>`
+
 ### Session File Structure
 
 Claude sessions are stored as JSONL (JSON Lines) files:
@@ -97,6 +121,46 @@ Claude sessions are stored as JSONL (JSON Lines) files:
 - Files located in: `$CLAUDE_PROJECTS_DIR/{project-name}/{session-id}.jsonl`
 
 ## Development Notes
+
+### Static Code Analysis
+
+Before running the application, always perform static checks:
+
+#### Perl Module Checking
+```bash
+# Check Perl modules with perlminlint
+perlminlint lib/CCSessions.pm
+# Expected output: "Module CCSessions is OK"
+```
+
+#### Template Checking
+```bash
+# Check YATT templates with yatt lint
+./lib/YATT/scripts/yatt lint public/index.yatt
+# Silent output means success
+```
+
+#### Debugging Template Compilation Errors
+
+YATT template errors come in two types:
+1. **YATT syntax errors** - Issues with YATT markup itself
+2. **Perl code errors** - Issues in the transpiled Perl code
+
+For Perl code errors, use `yatt genperl` to see the transpiled code:
+```bash
+# Generate Perl code for entire template file
+./lib/YATT/scripts/yatt genperl public/index.yatt
+
+# Extract code for a specific widget/page
+./lib/YATT/scripts/yatt genperl public/index.yatt | perl -nle '/^sub render_session \{/ .. /^\}/ and print'
+
+# General pattern: sub render_$widgetName
+./lib/YATT/scripts/yatt genperl public/index.yatt | perl -nle '/^sub render_WIDGETNAME \{/ .. /^\}/ and print'
+```
+
+This helps identify the exact line causing the error in the generated Perl code.
+
+Always run these static checks before starting the development server with `plackup app.psgi`.
 
 ### Inspecting YATT Templates
 

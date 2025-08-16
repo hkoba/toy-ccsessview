@@ -150,3 +150,33 @@ This allows direct testing of any method without writing Perl scripts, making de
 The viewer supports custom rendering for different content types:
 - Define widgets like `<!yatt:widget content_type__text>` for specific types
 - Falls back to plain text display for unknown types
+
+## Current Improvement Plan
+
+### Session List Enhancement (In Progress)
+
+The session page currently shows only index numbers. We're enhancing it to display summaries for each session item.
+
+#### Implementation Strategy
+
+1. **Data Structure Update**
+   - Current: `_session_cache` stores only byte positions
+   - New: Store both positions and extracted metadata (type, role, summary)
+   - Define `SessionItemInfo` type with fields: pos, type, role/tool, summary
+
+2. **Summary Extraction Logic**
+   - **user**: "User: " + first 50 chars of content
+   - **assistant**: "Claude: " + first 50 chars of content/text
+   - **tool_use**: "Tool: " + tool name
+   - **tool_result**: "Result: " + success/failure status
+   - **Other types**: Display type name directly
+
+3. **Backend Changes**
+   - Modify `scan_session` method to decode JSON and extract summaries
+   - Maintain backward compatibility for existing index access
+   - Cache structure: Array of hash refs with metadata
+
+4. **Frontend Updates**
+   - Update `<!yatt:page session>` to display summaries
+   - Add visual differentiation by type (icons/colors)
+   - Show preview text for each session item

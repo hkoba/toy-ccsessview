@@ -199,6 +199,18 @@ CCSessions.pm is a Modulino that can be executed directly from command line:
 ./lib/CCSessions.pm --output=tsv method_name args...
 ```
 
+#### Important: CLI_JSON Argument Passing
+
+When testing methods with JSON arguments, pass them as command line arguments, NOT via stdin:
+
+```bash
+# CORRECT - Pass JSON as command line arguments
+./lib/CCSessions.pm parse_item__user '{}' '{"type":"user","message":{"content":"test"}}'
+
+# INCORRECT - Do NOT use stdin
+echo '{}' | ./lib/CCSessions.pm parse_item__user /dev/stdin '...'  # This will fail
+```
+
 This allows direct testing of any method without writing Perl scripts, making development and debugging easier.
 
 ### Adding Features

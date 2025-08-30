@@ -55,30 +55,12 @@ sub scan_session {
         my $data = JSON::decode_json($json_line);
         $item->{type} = $data->{type} // 'unknown';
         
-        # typeに応じて概要を生成
-        if ($item->{type} eq 'user') {
-          $item->{role} = 'user';
-          my $content = ref($data->{message}{content}) eq 'ARRAY' 
-            ? $data->{message}{content}[0]{text} // ''
-            : $data->{message}{content} // '';
-          $item->{summary} = substr($content, 0, 50);
-        }
-        elsif ($item->{type} eq 'assistant') {
-          $item->{role} = 'assistant';
-          my $content = ref($data->{message}{content}) eq 'ARRAY'
-            ? $data->{message}{content}[0]{text} // ''
-            : $data->{message}{content} // '';
-          $item->{summary} = substr($content, 0, 50);
-        }
-        elsif ($item->{type} eq 'tool_use') {
-          $item->{tool} = $data->{toolName} // 'unknown';
-          $item->{summary} = "Tool: $item->{tool}";
-        }
-        elsif ($item->{type} eq 'tool_result') {
-          $item->{summary} = $data->{isError} ? "Error" : "Success";
-        }
-        else {
-          $item->{summary} = $item->{type};
+        # typeに応じて概要を生成 (dynamic dispatch)
+        my $methodName = 'parse_item__' . ($data->{type} // 'unknown');
+        if (my $parser = $self->can($methodName)) {
+          $parser->($self, $item, $data);
+        } else {
+          $self->parse_item__unknown($item, $data);
         }
       };
       if ($@) {
@@ -94,6 +76,40 @@ sub scan_session {
   };
 
   wantarray ? @$list : $list;
+}
+
+sub parse_item__user {
+  (my MY $self, my SessionItemInfo $item, my UserMessage $data) = @_;
+  $item->{role} = 'user';
+  my $content = ref($data->{message}{content}) eq 'ARRAY' 
+    ? $data->{message}{content}[0]{text} // ''
+    : $data->{message}{content} // '';
+  $item->{summary} = substr($content, 0, 50);
+}
+
+sub parse_item__assistant {
+  (my MY $self, my SessionItemInfo $item, my AssistantMessage $data) = @_;
+  $item->{role} = 'assistant';
+  my $content = ref($data->{message}{content}) eq 'ARRAY'
+    ? $data->{message}{content}[0]{text} // ''
+    : $data->{message}{content} // '';
+  $item->{summary} = substr($content, 0, 50);
+}
+
+sub parse_item__tool_use {
+  (my MY $self, my SessionItemInfo $item, my ToolUseMessage $data) = @_;
+  $item->{tool} = $data->{toolName} // 'unknown';
+  $item->{summary} = "Tool: $item->{tool}";
+}
+
+sub parse_item__tool_result {
+  (my MY $self, my SessionItemInfo $item, my ToolResultMessage $data) = @_;
+  $item->{summary} = $data->{isError} ? "Error" : "Success";
+}
+
+sub parse_item__unknown {
+  (my MY $self, my SessionItemInfo $item, my $data) = @_;
+  $item->{summary} = $item->{type};
 }
 
 sub session_filepath {

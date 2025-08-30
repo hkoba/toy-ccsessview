@@ -211,6 +211,45 @@ When testing methods with JSON arguments, pass them as command line arguments, N
 echo '{}' | ./lib/CCSessions.pm parse_item__user /dev/stdin '...'  # This will fail
 ```
 
+#### CLI_JSON Development Best Practices
+
+**Return Objects (HASHes) Instead of Strings**
+
+When developing with CLI_JSON, prefer returning Perl HASH references (objects) over simple strings:
+
+```perl
+# GOOD - Returns a HASH with multiple fields
+sub my_method {
+  (my MY $self, my $item) = @_;
+  $item->{field1} = 'value1';
+  $item->{field2} = 'value2';
+  $item;  # Returns the entire object
+}
+
+# LESS USEFUL - Returns only a single value
+sub my_method {
+  (my MY $self, my $item) = @_;
+  $item->{field1} = 'value1';
+  $item->{field1};  # Returns only one field
+}
+```
+
+Benefits of returning objects:
+- **Complete visibility**: All fields are visible in the JSON output
+- **Easier debugging**: Can see all data transformations at once
+- **Better testing**: Can verify multiple fields in a single call
+- **Field preservation**: Existing fields in input objects are retained
+
+Example output comparison:
+```bash
+# With object return - shows all fields
+$ ./lib/CCSessions.pm parse_item__user '{"pos":123}' '{"type":"user",...}'
+{"pos":123,"role":"user","summary":"...","type":"user"}
+
+# With string return - shows only one value
+"..."
+```
+
 This allows direct testing of any method without writing Perl scripts, making development and debugging easier.
 
 ### Adding Features

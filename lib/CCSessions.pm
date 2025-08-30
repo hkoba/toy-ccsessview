@@ -85,6 +85,7 @@ sub parse_item__user {
     ? $data->{message}{content}[0]{text} // ''
     : $data->{message}{content} // '';
   $item->{summary} = substr($content, 0, 50);
+  $item;
 }
 
 sub parse_item__assistant {
@@ -94,22 +95,26 @@ sub parse_item__assistant {
     ? $data->{message}{content}[0]{text} // ''
     : $data->{message}{content} // '';
   $item->{summary} = substr($content, 0, 50);
+  $item;
 }
 
 sub parse_item__tool_use {
   (my MY $self, my SessionItemInfo $item, my ToolUseMessage $data) = @_;
   $item->{tool} = $data->{toolName} // 'unknown';
   $item->{summary} = "Tool: $item->{tool}";
+  $item;
 }
 
 sub parse_item__tool_result {
   (my MY $self, my SessionItemInfo $item, my ToolResultMessage $data) = @_;
   $item->{summary} = $data->{isError} ? "Error" : "Success";
+  $item;
 }
 
 sub parse_item__unknown {
   (my MY $self, my SessionItemInfo $item, my $data) = @_;
   $item->{summary} = $item->{type};
+  $item;
 }
 
 sub session_filepath {

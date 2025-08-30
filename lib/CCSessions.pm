@@ -17,6 +17,11 @@ use File::stat;
 use MOP4Import::Types
   (FileInfo => [[fields => qw(id dir stat)]],
    SessionItemInfo => [[fields => qw(pos type role tool summary)]],
+   # Message types for different session items
+   UserMessage => [[fields => qw(type message uuid timestamp parentUuid userType cwd sessionId version gitBranch isSidechain)]],
+   AssistantMessage => [[fields => qw(type message uuid timestamp parentUuid isSidechain toolInvocations)]],
+   ToolUseMessage => [[fields => qw(type toolName toolInput uuid timestamp parentUuid)]],
+   ToolResultMessage => [[fields => qw(type content toolUseId uuid timestamp parentUuid isError)]],
    # FileCache => [[fields => qw(mtime lines)]],
   );
 

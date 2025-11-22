@@ -176,3 +176,10 @@ decode_utf8($str);
 </yatt:foreach>
 </ul>
 
+
+<!yatt:widget tool_use__Bash item="value!">
+
+<p>
+  &yatt:item{input}{description};
+</p>
+<pre><code class="language-sh">&yatt:item{input}{command};</code></pre>

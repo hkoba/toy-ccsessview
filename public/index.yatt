@@ -58,6 +58,12 @@
          next_ix:value="&yatt:ix; + 1"
          />
 
+<style>
+  pre.content, pre.json {
+      white-space: pre-wrap;
+  }
+</style>
+
 <a href="./?~~=show;id=&yatt:id;;ix=&yatt:prev_ix;">←</a>
 <a href="?~~=session;id=&yatt:id;">↑</a>
 <a href="./?~~=show;id=&yatt:id;;ix=&yatt:next_ix;">→</a><br>
@@ -66,22 +72,56 @@
 
 <yatt:if "ref &yatt:rec{message}{content}; eq 'ARRAY'">
   <yatt:foreach my:value=item list="&yatt:lexpand(:rec{message}{content});" >
-    <h3>&yatt:item{type};</h3>
     <yatt:if "&yatt:can_render([content_type_,:item{type}]);">
       &yatt:render([content_type_,:item{type}],:item);
       <:yatt:else/>
-      <pre style="white-space: pre-wrap;">&yatt:item;</pre>
+      <h3>&yatt:item{type};</h3>
+      <pre class="content">&yatt:item;</pre>
     </yatt:if>
   </yatt:foreach>
 <:yatt:else/>
-<pre style="white-space: pre-wrap;">
+<pre class="content">
 &yatt:rec{message}{content};
 </pre>
 </yatt:if>
+<yatt:my result:value="&yatt:rec{toolUseResult};"/>
+<yatt:if "ref &yatt:result;">
+  &yatt:result{filePath};<br>
+  oldString
+  <pre>&yatt:result{oldString};</pre>
+  newString
+  <pre>&yatt:result{newString};</pre>
+<:yatt:else/>
+no toolUseResult result
+</yatt:if>
 <hr>
-<pre style="white-space: pre-wrap;">
+<pre class="json">
 &yatt:decode_utf8(:json);
 </pre>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+
+<script>
+  const { Marked } = globalThis.marked;
+  const { markedHighlight } = globalThis.markedHighlight;
+  const marked = new Marked(
+    markedHighlight({
+      emptyLangClass: 'hljs',
+      langPrefix: 'hljs language-',
+      highlight(code, lang, info) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+      }
+    })
+  );
+  for (const node of document.querySelectorAll('.content')) {
+    node.innerHTML = marked.parse(node.textContent);
+  }
+  hljs.highlightAll();
+</script>
 
 <!yatt:entity decode_json json>
 use JSON;
@@ -93,14 +133,46 @@ decode_utf8($str);
 
 <!yatt:widget content_type__text item="value!">
 
-<pre style="white-space: pre-wrap;">
+<pre class="content">
 &yatt:item{text};
 </pre>
 
 
 <!yatt:widget content_type__tool_result item="value!">
 
-<pre style="white-space: pre-wrap;">
-&yatt:item{content};
-</pre>
+<h3>&yatt:item{type};</h3>
+
+<pre class="content">&yatt:item{content};</pre>
+
+
+<!yatt:widget content_type__tool_use item="value!">
+
+<h3>&yatt:item{type};: &yatt:item{name};</h3>
+
+<yatt:if "&yatt:can_render([tool_use_,:item{name}]);">
+  &yatt:render([tool_use_,:item{name}],:item);
+  <:yatt:else/>
+  (No special widget)
+  <pre class="content">&yatt:item;</pre>
+</yatt:if>
+
+
+<!yatt:widget tool_use__Edit item="value!">
+
+<h4>input: new_string</h4>
+&yatt:item{input}{file_path};
+<yatt:if "&yatt:item{input}{file_path}; =~ /\.(t|pl|pm)$/">
+<pre><code class="language-perl">&yatt:item{input}{new_string};</code></pre>
+<:yatt:else/>
+<pre class="content">&yatt:item{input}{new_string};</pre>
+</yatt:if>
+
+<!yatt:widget tool_use__TodoWrite item="value!">
+
+<h4>input: todos</h4>
+<ul>
+<yatt:foreach my=todo list="&yatt:lexpand(:item{input}{todos});">
+  <li>&yatt:todo{id}; &yatt:todo{status}; &yatt:todo{content};</li>
+</yatt:foreach>
+</ul>
 

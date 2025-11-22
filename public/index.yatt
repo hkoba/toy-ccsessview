@@ -88,9 +88,9 @@
 <yatt:if "ref &yatt:result;">
   &yatt:result{filePath};<br>
   oldString
-  <pre>&yatt:result{oldString};</pre>
+  <yatt:file_content fn="&yatt:result{filePath};" content="&yatt:result{oldString};"/>
   newString
-  <pre>&yatt:result{newString};</pre>
+  <yatt:file_content fn="&yatt:result{filePath};" content="&yatt:result{newString};"/>
 <:yatt:else/>
 no toolUseResult result
 </yatt:if>
@@ -160,12 +160,9 @@ decode_utf8($str);
 <!yatt:widget tool_use__Edit item="value!">
 
 <h4>input: new_string</h4>
+
 &yatt:item{input}{file_path};
-<yatt:if "&yatt:item{input}{file_path}; =~ /\.(t|pl|pm)$/">
-<pre><code class="language-perl">&yatt:item{input}{new_string};</code></pre>
-<:yatt:else/>
-<pre class="content">&yatt:item{input}{new_string};</pre>
-</yatt:if>
+<yatt:file_content fn="&yatt:item{input}{file_path};" content="&yatt:item{input}{new_string};"/>
 
 <!yatt:widget tool_use__TodoWrite item="value!">
 
@@ -182,4 +179,18 @@ decode_utf8($str);
 <p>
   &yatt:item{input}{description};
 </p>
-<pre><code class="language-sh">&yatt:item{input}{command};</code></pre>
+<yatt:lang_content lang="sh" content="&yatt:item{input}{command};"/>
+
+<!yatt:widget file_content fn content>
+
+<yatt:lang_content lang="&yatt:cc_sessions():filename_language(:fn);" content/>
+
+<!yatt:widget lang_content lang content>
+
+<yatt:if "not &yatt:lang;">
+<pre>&yatt:content;</pre>
+<:yatt:else if="&yatt:lang; eq 'markdown'"/>
+<pre class="content">&yatt:content;</pre>
+<:yatt:else/>
+<pre><code class="language-&yatt:lang;">&yatt:content;</code></pre>
+</yatt:if>

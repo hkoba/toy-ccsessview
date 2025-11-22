@@ -13,6 +13,7 @@ use MOP4Import::Base::CLI_JSON -as_base
    ];
 
 use File::stat;
+use File::MimeInfo;
 
 use MOP4Import::Types
   (FileInfo => [[fields => qw(id dir stat)]],
@@ -173,8 +174,14 @@ sub project_list {
   glob "$self->{claude_projects}/-*";
 }
 
-sub scan {
+sub filename_language {
   (my MY $self, my $fn) = @_;
+  return unless $fn;
+  my $mime = mimetype($fn)
+    or return;
+  my ($_text, $lang) = split m{/}, $mime;
+  $lang =~ s/^x-//;
+  $lang;
 }
 
 MY->cli_run(\@ARGV) unless caller;
